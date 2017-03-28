@@ -27,9 +27,9 @@
             return _context.SaveChangesAsync();
         }
         
-        public TRepository GetRepository<TRepository>() where TRepository : class
+        public IRepository<TEntity> GetRepository<TEntity>() where TEntity : class
         {
-            return _objectFactory.GetByType<TRepository>(typeof(IRepository<>));
+            return _objectFactory.GetByType<IRepository<TEntity>>(typeof(IRepository<TEntity>));
         }
 
         public void Dispose()

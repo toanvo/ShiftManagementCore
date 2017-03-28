@@ -79,6 +79,7 @@
         {
             services.AddTransient<IEmployeeService, EmployeeService>();
             services.AddTransient<IObjectFactory, Infrastructure.ObjectFactory>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
             ServiceProvider = services.BuildServiceProvider();
             services.AddSingleton(ServiceProvider);
