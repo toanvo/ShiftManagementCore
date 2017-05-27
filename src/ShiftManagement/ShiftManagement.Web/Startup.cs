@@ -12,8 +12,7 @@
     using ShiftManagement.DataAccess.Repositories;
     using ShiftManagement.DataAccess.Interfaces;
     using ShiftManagement.Domain;
-    using ShiftManagement.DataAccess;
-    using Microsoft.EntityFrameworkCore.Infrastructure;
+    using ShiftManagement.DataAccess;    
     using Microsoft.EntityFrameworkCore;
 
     public class Startup
@@ -83,7 +82,7 @@
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
             ServiceProvider = services.BuildServiceProvider();
             services.AddSingleton(ServiceProvider);
+            services.AddSingleton(services);
         }
-
     }
 }

@@ -7,9 +7,6 @@
     [Authorize]
     public class BaseController : Controller
     {
-        public ClaimsPrincipal GetCurrentUser
-        {
-            get { return HttpContext.User; }
-        }
+        public ClaimsPrincipal GetCurrentUser => HttpContext.User;
     }
 }

@@ -5,6 +5,7 @@
     using ShiftManagement.Services.Interfaces;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using System;
 
     public class EmployeeService : IEmployeeService
     {
@@ -15,32 +16,32 @@
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<Employee>> GetAllEmployee()
+        public Task<List<Employee>> GetAllEmployee()
         {
-            return await _unitOfWork.GetRepository<Employee>().GetAllAsync();
+            return _unitOfWork.GetRepository<Employee>().GetAllAsync();
         }
 
-        public async Task<Employee> GetEmployeeById(int employeeId)
+        public Task<Employee> GetEmployeeById(int employeeId)
         {
-            return await _unitOfWork.GetRepository<Employee>().GetByIdAsync(employeeId);
+            return _unitOfWork.GetRepository<Employee>().GetByIdAsync(employeeId);
         }
 
-        public async Task CreateEmployee(Employee employee)
+        public Task CreateEmployee(Employee employee)
         {
             _unitOfWork.GetRepository<Employee>().Insert(employee);
-            await _unitOfWork.CommitAsync();
+            return _unitOfWork.CommitAsync();
         }
 
-        public async Task UpdateEmployee(Employee employee)
+        public Task UpdateEmployee(Employee employee)
         {
             _unitOfWork.GetRepository<Employee>().Update(employee);
-            await _unitOfWork.CommitAsync();
+            return _unitOfWork.CommitAsync();
         }
 
-        public async Task DeleteEmployee(int employeeId)
+        public Task DeleteEmployee(int employeeId)
         {
             _unitOfWork.GetRepository<Employee>().Delete(employeeId);
-            await _unitOfWork.CommitAsync();
+            return _unitOfWork.CommitAsync();
         }
     }
 }
