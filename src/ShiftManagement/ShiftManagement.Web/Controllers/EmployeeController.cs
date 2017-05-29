@@ -34,7 +34,6 @@
             await _service.CreateEmployee(employee);
         }
 
-        // PUT api/values/5
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromBody]Employee employee)
         {
