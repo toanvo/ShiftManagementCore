@@ -9,9 +9,9 @@
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public ObjectFactory(IServiceCollection services)
+        public ObjectFactory(IServiceProvider serviceProvider)
         {
-            _serviceProvider = services.BuildServiceProvider();
+            _serviceProvider = serviceProvider;
         }
 
         public T Get<T>() where T : class

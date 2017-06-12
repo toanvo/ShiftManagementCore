@@ -14,7 +14,7 @@ namespace ShiftManagement.DataAccess.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .HasAnnotation("ProductVersion", "1.1.1")
+                .HasAnnotation("ProductVersion", "1.1.2")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<int>", b =>
@@ -156,6 +156,10 @@ namespace ShiftManagement.DataAccess.Migrations
 
                     b.Property<int?>("ContractTypeId");
 
+                    b.Property<int>("CreateUserId");
+
+                    b.Property<DateTime>("CreatedDate");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256);
 
@@ -184,6 +188,10 @@ namespace ShiftManagement.DataAccess.Migrations
                     b.Property<string>("Title");
 
                     b.Property<bool>("TwoFactorEnabled");
+
+                    b.Property<int>("UpdateUserId");
+
+                    b.Property<DateTime>("UpdatedDate");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256);
