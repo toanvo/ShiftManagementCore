@@ -9,6 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Scripts\js\**" />
+    <Compile Remove="wwwroot\js\%40angular\router\**" />
+    <Content Remove="Scripts\js\**" />
+    <Content Remove="wwwroot\js\%40angular\router\**" />
+    <EmbeddedResource Remove="Scripts\js\**" />
+    <EmbeddedResource Remove="wwwroot\js\%40angular\router\**" />
+    <None Remove="Scripts\js\**" />
+    <None Remove="wwwroot\js\%40angular\router\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="wwwroot\index.html" />
     <Content Include="wwwroot\systemjs.config.js" />
   </ItemGroup>
@@ -40,7 +51,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Scripts\js\" />
+    <Folder Include="typings\" />
+    <Folder Include="typings\" />
     <Folder Include="typings\" />
     <Folder Include="wwwroot\app\" />
     <Folder Include="wwwroot\js\%40angular\" />

@@ -1,12 +1,13 @@
-import { PartialObserver } from './Observer';
-import { Operator } from './Operator';
-import { Subscriber } from './Subscriber';
-import { Subscription, AnonymousSubscription, TeardownLogic } from './Subscription';
-import { root } from './util/root';
-import { toSubscriber } from './util/toSubscriber';
-import { IfObservable } from './observable/IfObservable';
-import { ErrorObservable } from './observable/ErrorObservable';
-import { observable as Symbol_observable } from './symbol/observable';
+import {PartialObserver} from './Observer';
+import {Operator} from './Operator';
+import {Subscriber} from './Subscriber';
+import {Subscription, AnonymousSubscription, TeardownLogic} from './Subscription';
+import {root} from './util/root';
+import {$$observable} from './symbol/observable';
+import {toSubscriber} from './util/toSubscriber';
+
+import {IfObservable} from './observable/IfObservable';
+import {ErrorObservable} from './observable/ErrorObservable';
 
 export interface Subscribable<T> {
   subscribe(observerOrNext?: PartialObserver<T> | ((value: T) => void),
@@ -14,7 +15,7 @@ export interface Subscribable<T> {
             complete?: () => void): AnonymousSubscription;
 }
 
-export type SubscribableOrPromise<T> = Subscribable<T> | PromiseLike<T>;
+export type SubscribableOrPromise<T> = Subscribable<T> | Promise<T>;
 export type ObservableInput<T> = SubscribableOrPromise<T> | ArrayLike<T>;
 
 /**
@@ -37,7 +38,7 @@ export class Observable<T> implements Subscribable<T> {
    * can be `next`ed, or an `error` method can be called to raise an error, or
    * `complete` can be called to notify of a successful completion.
    */
-  constructor(subscribe?: (this: Observable<T>, subscriber: Subscriber<T>) => TeardownLogic) {
+  constructor(subscribe?: <R>(subscriber: Subscriber<R>) => TeardownLogic) {
     if (subscribe) {
       this._subscribe = subscribe;
     }
@@ -53,9 +54,9 @@ export class Observable<T> implements Subscribable<T> {
    * @param {Function} subscribe? the subscriber function to be passed to the Observable constructor
    * @return {Observable} a new cold observable
    */
-  static create: Function = <T>(subscribe?: (subscriber: Subscriber<T>) => TeardownLogic) => {
+  static create: Function = <T>(subscribe?: <R>(subscriber: Subscriber<R>) => TeardownLogic) => {
     return new Observable<T>(subscribe);
-  }
+  };
 
   /**
    * Creates a new Observable, with this Observable as the source, and the passed
@@ -82,9 +83,6 @@ export class Observable<T> implements Subscribable<T> {
    * @param {Function} complete (optional) a handler for a terminal event resulting from successful completion.
    * @return {ISubscription} a subscription reference to the registered handlers
    */
-  subscribe(): Subscription;
-  subscribe(observer: PartialObserver<T>): Subscription;
-  subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): Subscription;
   subscribe(observerOrNext?: PartialObserver<T> | ((value: T) => void),
             error?: (error: any) => void,
             complete?: () => void): Subscription {
@@ -92,11 +90,7 @@ export class Observable<T> implements Subscribable<T> {
     const { operator } = this;
     const sink = toSubscriber(observerOrNext, error, complete);
 
-    if (operator) {
-      operator.call(sink, this.source);
-    } else {
-      sink.add(this._trySubscribe(sink));
-    }
+    sink.add(operator ? operator.call(sink, this) : this._subscribe(sink));
 
     if (sink.syncErrorThrowable) {
       sink.syncErrorThrowable = false;
@@ -106,16 +100,6 @@ export class Observable<T> implements Subscribable<T> {
     }
 
     return sink;
-  }
-
-  protected _trySubscribe(sink: Subscriber<T>): TeardownLogic {
-    try {
-      return this._subscribe(sink);
-    } catch (err) {
-      sink.syncErrorThrown = true;
-      sink.syncErrorValue = err;
-      sink.error(err);
-    }
   }
 
   /**
@@ -139,10 +123,7 @@ export class Observable<T> implements Subscribable<T> {
     }
 
     return new PromiseCtor<void>((resolve, reject) => {
-      // Must be declared in a separate statement to avoid a RefernceError when
-      // accessing subscription below in the closure due to Temporal Dead Zone.
-      let subscription: Subscription;
-      subscription = this.subscribe((value) => {
+      const subscription = this.subscribe((value) => {
         if (subscription) {
           // if there is a subscription, then we can surmise
           // the next handling is asynchronous. Any errors thrown
@@ -157,7 +138,7 @@ export class Observable<T> implements Subscribable<T> {
         } else {
           // if there is NO subscription, then we're getting a nexted
           // value synchronously during subscription. We can just call it.
-          // If it errors, Observable's `subscribe` will ensure the
+          // If it errors, Observable's `subscribe` imple will ensure the
           // unsubscription logic is called, then synchronously rethrow the error.
           // After that, Promise will trap the error and send it
           // down the rejection path.
@@ -180,7 +161,7 @@ export class Observable<T> implements Subscribable<T> {
    * @method Symbol.observable
    * @return {Observable} this instance of the observable
    */
-  [Symbol_observable]() {
+  [$$observable]() {
     return this;
   }
 }

@@ -1,17 +1,20 @@
-﻿///<reference path="../../typings/index.d.ts"/>
-import {NgModule} from "@angular/core";
-import {BrowserModule} from "@angular/platform-browser";
-import {HttpModule} from "@angular/http";
+﻿import { NgModule } from "@angular/core";
+import { BrowserModule } from "@angular/platform-browser";
+import { HttpModule } from "@angular/http";
+import { Employee } from "./models/employee";
+import { EmployeeService } from "./services/employee.service";
 
 import "rxjs/Rx";
 
-import {AppComponent} from "./app.component";
+import { AppComponent } from "./app.component";
 
 @NgModule({
     declarations: [ AppComponent ],
     imports: [
         BrowserModule,
-        HttpModule
+        HttpModule,
+        Employee,
+        EmployeeService
     ],
     providers: [
     ],

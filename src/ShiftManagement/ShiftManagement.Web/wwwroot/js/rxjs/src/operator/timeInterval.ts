@@ -1,8 +1,8 @@
-import { Operator } from '../Operator';
-import { Observable } from '../Observable';
-import { Subscriber } from '../Subscriber';
-import { IScheduler } from '../Scheduler';
-import { async } from '../scheduler/async';
+import {Operator} from '../Operator';
+import {Observable} from '../Observable';
+import {Subscriber} from '../Subscriber';
+import {Scheduler} from '../Scheduler';
+import {async} from '../scheduler/async';
 
 /**
  * @param scheduler
@@ -10,8 +10,12 @@ import { async } from '../scheduler/async';
  * @method timeInterval
  * @owner Observable
  */
-export function timeInterval<T>(this: Observable<T>, scheduler: IScheduler = async): Observable<TimeInterval<T>> {
+export function timeInterval<T>(scheduler: Scheduler = async): Observable<TimeInterval<T>> {
   return this.lift(new TimeIntervalOperator(scheduler));
+}
+
+export interface TimeIntervalSignature<T> {
+  (scheduler?: Scheduler): Observable<TimeInterval<T>>;
 }
 
 export class TimeInterval<T> {
@@ -21,12 +25,12 @@ export class TimeInterval<T> {
 };
 
 class TimeIntervalOperator<T> implements Operator<T, TimeInterval<T>> {
-  constructor(private scheduler: IScheduler) {
+  constructor(private scheduler: Scheduler) {
 
   }
 
   call(observer: Subscriber<TimeInterval<T>>, source: any): any {
-    return source.subscribe(new TimeIntervalSubscriber(observer, this.scheduler));
+    return source._subscribe(new TimeIntervalSubscriber(observer, this.scheduler));
   }
 }
 
@@ -38,7 +42,7 @@ class TimeIntervalOperator<T> implements Operator<T, TimeInterval<T>> {
 class TimeIntervalSubscriber<T> extends Subscriber<T> {
   private lastTime: number = 0;
 
-  constructor(destination: Subscriber<TimeInterval<T>>, private scheduler: IScheduler) {
+  constructor(destination: Subscriber<TimeInterval<T>>, private scheduler: Scheduler) {
     super(destination);
 
     this.lastTime = scheduler.now();

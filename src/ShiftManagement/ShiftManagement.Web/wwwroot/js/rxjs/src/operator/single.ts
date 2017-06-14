@@ -1,9 +1,8 @@
-import { Observable } from '../Observable';
-import { Operator } from '../Operator';
-import { Subscriber } from '../Subscriber';
-import { Observer } from '../Observer';
-import { EmptyError } from '../util/EmptyError';
-import { TeardownLogic } from '../Subscription';
+import {Observable} from '../Observable';
+import {Operator} from '../Operator';
+import {Subscriber} from '../Subscriber';
+import {Observer} from '../Observer';
+import {EmptyError} from '../util/EmptyError';
 
 /**
  * Returns an Observable that emits the single item emitted by the source Observable that matches a specified
@@ -14,15 +13,19 @@ import { TeardownLogic } from '../Subscription';
  *
  * @throws {EmptyError} Delivers an EmptyError to the Observer's `error`
  * callback if the Observable completes before any `next` notification was sent.
- * @param {Function} predicate - A predicate function to evaluate items emitted by the source Observable.
- * @return {Observable<T>} An Observable that emits the single item emitted by the source Observable that matches
+ * @param {Function} a predicate function to evaluate items emitted by the source Observable.
+ * @return {Observable<T>} an Observable that emits the single item emitted by the source Observable that matches
  * the predicate.
  .
  * @method single
  * @owner Observable
  */
-export function single<T>(this: Observable<T>, predicate?: (value: T, index: number, source: Observable<T>) => boolean): Observable<T> {
+export function single<T>(predicate?: (value: T, index: number, source: Observable<T>) => boolean): Observable<T> {
   return this.lift(new SingleOperator(predicate, this));
+}
+
+export interface SingleSignature<T> {
+  (predicate?: (value: T, index: number, source: Observable<T>) => boolean): Observable<T>;
 }
 
 class SingleOperator<T> implements Operator<T, T> {
@@ -30,8 +33,8 @@ class SingleOperator<T> implements Operator<T, T> {
               private source?: Observable<T>) {
   }
 
-  call(subscriber: Subscriber<T>, source: any): TeardownLogic {
-    return source.subscribe(new SingleSubscriber(subscriber, this.predicate, this.source));
+  call(subscriber: Subscriber<T>, source: any): any {
+    return source._subscribe(new SingleSubscriber(subscriber, this.predicate, this.source));
   }
 }
 
@@ -61,18 +64,19 @@ class SingleSubscriber<T> extends Subscriber<T> {
   }
 
   protected _next(value: T): void {
-    const index = this.index++;
-
-    if (this.predicate) {
-      this.tryNext(value, index);
+    const predicate = this.predicate;
+    this.index++;
+    if (predicate) {
+      this.tryNext(value);
     } else {
       this.applySingleValue(value);
     }
   }
 
-  private tryNext(value: T, index: number): void {
+  private tryNext(value: T): void {
     try {
-      if (this.predicate(value, index, this.source)) {
+      const result = this.predicate(value, this.index, this.source);
+      if (result) {
         this.applySingleValue(value);
       }
     } catch (err) {

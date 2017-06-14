@@ -29,9 +29,13 @@ import { Observable } from '../Observable';
  * @see {@link exhaustMap}
  * @see {@link zipAll}
  *
- * @return {Observable} An Observable that takes a source of Observables and propagates the first observable
- * exclusively until it completes before subscribing to the next.
+ * @return {Observable} Returns an Observable that takes a source of Observables
+ * and propagates the first observable exclusively until it completes before
+ * subscribing to the next.
  * @method exhaust
  * @owner Observable
  */
-export declare function exhaust<T>(this: Observable<T>): Observable<T>;
+export declare function exhaust<T>(): Observable<T>;
+export interface SwitchFirstSignature<T> {
+    (): T;
+}

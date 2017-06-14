@@ -1,15 +1,10 @@
-import { Operator } from '../Operator';
-import { Observable, ObservableInput } from '../Observable';
-import { Subscriber } from '../Subscriber';
-import { Subscription } from '../Subscription';
-import { OuterSubscriber } from '../OuterSubscriber';
-import { InnerSubscriber } from '../InnerSubscriber';
-import { subscribeToResult } from '../util/subscribeToResult';
-
-/* tslint:disable:max-line-length */
-export function switchMapTo<T, R>(this: Observable<T>, observable: ObservableInput<R>): Observable<R>;
-export function switchMapTo<T, I, R>(this: Observable<T>, observable: ObservableInput<I>, resultSelector: (outerValue: T, innerValue: I, outerIndex: number, innerIndex: number) => R): Observable<R>;
-/* tslint:enable:max-line-length */
+import {Operator} from '../Operator';
+import {Observable, ObservableInput} from '../Observable';
+import {Subscriber} from '../Subscriber';
+import {Subscription} from '../Subscription';
+import {OuterSubscriber} from '../OuterSubscriber';
+import {InnerSubscriber} from '../InnerSubscriber';
+import {subscribeToResult} from '../util/subscribeToResult';
 
 /**
  * Projects each source value to the same Observable which is flattened multiple
@@ -36,7 +31,7 @@ export function switchMapTo<T, I, R>(this: Observable<T>, observable: Observable
  * @see {@link switchMap}
  * @see {@link mergeMapTo}
  *
- * @param {ObservableInput} innerObservable An Observable to replace each value from
+ * @param {Observable} innerObservable An Observable to replace each value from
  * the source Observable.
  * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
  * A function to produce the value on the output Observable based on the values
@@ -47,18 +42,26 @@ export function switchMapTo<T, I, R>(this: Observable<T>, observable: Observable
  * - `outerIndex`: the "index" of the value that came from the source
  * - `innerIndex`: the "index" of the value from the projected Observable
  * @return {Observable} An Observable that emits items from the given
+ * `innerObservable` every time a value is emitted on the source Observable.
+ * @return {Observable} An Observable that emits items from the given
  * `innerObservable` (and optionally transformed through `resultSelector`) every
  * time a value is emitted on the source Observable, and taking only the values
  * from the most recently projected inner Observable.
  * @method switchMapTo
  * @owner Observable
  */
-export function switchMapTo<T, I, R>(this: Observable<T>, innerObservable: Observable<I>,
+export function switchMapTo<T, I, R>(innerObservable: Observable<I>,
                                      resultSelector?: (outerValue: T,
                                                        innerValue: I,
                                                        outerIndex: number,
-                                                       innerIndex: number) => R): Observable<I | R> {
+                                                       innerIndex: number) => R): Observable<R> {
   return this.lift(new SwitchMapToOperator(innerObservable, resultSelector));
+}
+
+export interface SwitchMapToSignature<T> {
+  <R>(observable: ObservableInput<R>): Observable<R>;
+  <I, R>(observable: ObservableInput<I>,
+         resultSelector: (outerValue: T, innerValue: I, outerIndex: number, innerIndex: number) => R): Observable<R>;
 }
 
 class SwitchMapToOperator<T, I, R> implements Operator<T, I> {
@@ -67,7 +70,7 @@ class SwitchMapToOperator<T, I, R> implements Operator<T, I> {
   }
 
   call(subscriber: Subscriber<I>, source: any): any {
-    return source.subscribe(new SwitchMapToSubscriber(subscriber, this.observable, this.resultSelector));
+    return source._subscribe(new SwitchMapToSubscriber(subscriber, this.observable, this.resultSelector));
   }
 }
 
@@ -96,7 +99,7 @@ class SwitchMapToSubscriber<T, I, R> extends OuterSubscriber<T, I> {
 
   protected _complete() {
     const {innerSubscription} = this;
-    if (!innerSubscription || innerSubscription.closed) {
+    if (!innerSubscription || innerSubscription.isUnsubscribed) {
       super._complete();
     }
   }

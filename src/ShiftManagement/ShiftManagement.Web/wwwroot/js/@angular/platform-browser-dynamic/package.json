@@ -2,7 +2,7 @@
   "_args": [
     [
       "@angular/platform-browser-dynamic@4.2.2",
-      "C:\\Users\\NguoiDung\\Documents\\ShiftManagementCore\\src\\ShiftManagement\\ShiftManagement.Web"
+      "G:\\Projects\\ShiftCore\\src\\ShiftManagement\\ShiftManagement.Web"
     ]
   ],
   "_from": "@angular/platform-browser-dynamic@4.2.2",
@@ -35,7 +35,7 @@
   "_shasum": "00f4b8d1ce415f432bcc5ab2bb90b0b069036287",
   "_shrinkwrap": null,
   "_spec": "@angular/platform-browser-dynamic@4.2.2",
-  "_where": "C:\\Users\\NguoiDung\\Documents\\ShiftManagementCore\\src\\ShiftManagement\\ShiftManagement.Web",
+  "_where": "G:\\Projects\\ShiftCore\\src\\ShiftManagement\\ShiftManagement.Web",
   "author": {
     "name": "angular"
   },

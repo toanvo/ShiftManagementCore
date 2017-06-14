@@ -1,10 +1,14 @@
-import { IScheduler } from '../Scheduler';
+import { Scheduler } from '../Scheduler';
 import { Observable } from '../Observable';
 /**
- * @param {number} due
- * @param {Scheduler} [scheduler]
+ * @param due
+ * @param errorToSend
+ * @param scheduler
  * @return {Observable<R>|WebSocketSubject<T>|Observable<T>}
  * @method timeout
  * @owner Observable
  */
-export declare function timeout<T>(this: Observable<T>, due: number | Date, scheduler?: IScheduler): Observable<T>;
+export declare function timeout<T>(due: number | Date, errorToSend?: any, scheduler?: Scheduler): Observable<T>;
+export interface TimeoutSignature<T> {
+    (due: number | Date, errorToSend?: any, scheduler?: Scheduler): Observable<T>;
+}

@@ -35,7 +35,7 @@ gulp.task('app', ['app_clean'], function () {
     return gulp.src(srcPaths.app)
         .pipe(gulp_sourcemaps.init())
         .pipe(gulp_typescript(require('./tsconfig.json').compilerOptions))
-        .pipe(gulp_uglify({ mangle: false }))
+        //.pipe(gulp_uglify({ mangle: false }))
         .pipe(gulp_sourcemaps.write('/'))
         .pipe(gulp.dest(destPaths.app));
 });

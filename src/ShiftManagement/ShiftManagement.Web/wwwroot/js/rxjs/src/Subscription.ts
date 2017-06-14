@@ -1,9 +1,9 @@
-import { isArray } from './util/isArray';
-import { isObject } from './util/isObject';
-import { isFunction } from './util/isFunction';
-import { tryCatch } from './util/tryCatch';
-import { errorObject } from './util/errorObject';
-import { UnsubscriptionError } from './util/UnsubscriptionError';
+import {isArray} from './util/isArray';
+import {isObject} from './util/isObject';
+import {isFunction} from './util/isFunction';
+import {tryCatch} from './util/tryCatch';
+import {errorObject} from './util/errorObject';
+import {UnsubscriptionError} from './util/UnsubscriptionError';
 
 export interface AnonymousSubscription {
   unsubscribe(): void;
@@ -13,7 +13,9 @@ export type TeardownLogic = AnonymousSubscription | Function | void;
 
 export interface ISubscription extends AnonymousSubscription {
   unsubscribe(): void;
-  readonly closed: boolean;
+  isUnsubscribed: boolean;
+  add(teardown: TeardownLogic): ISubscription;
+  remove(sub: ISubscription): void;
 }
 
 /**
@@ -30,7 +32,7 @@ export interface ISubscription extends AnonymousSubscription {
  */
 export class Subscription implements ISubscription {
   public static EMPTY: Subscription = (function(empty: any){
-    empty.closed = true;
+    empty.isUnsubscribed = true;
     return empty;
   }(new Subscription()));
 
@@ -38,11 +40,7 @@ export class Subscription implements ISubscription {
    * A flag to indicate whether this Subscription has already been unsubscribed.
    * @type {boolean}
    */
-  public closed: boolean = false;
-
-  protected _parent: Subscription = null;
-  protected _parents: Subscription[] = null;
-  private _subscriptions: ISubscription[] = null;
+  public isUnsubscribed: boolean = false;
 
   /**
    * @param {function(): void} [unsubscribe] A function describing how to
@@ -64,46 +62,28 @@ export class Subscription implements ISubscription {
     let hasErrors = false;
     let errors: any[];
 
-    if (this.closed) {
+    if (this.isUnsubscribed) {
       return;
     }
 
-    let { _parent, _parents, _unsubscribe, _subscriptions } = (<any> this);
+    this.isUnsubscribed = true;
 
-    this.closed = true;
-    this._parent = null;
-    this._parents = null;
-    // null out _subscriptions first so any child subscriptions that attempt
-    // to remove themselves from this subscription will noop
-    this._subscriptions = null;
+    const { _unsubscribe, _subscriptions } = (<any> this);
 
-    let index = -1;
-    let len = _parents ? _parents.length : 0;
-
-    // if this._parent is null, then so is this._parents, and we
-    // don't have to remove ourselves from any parent subscriptions.
-    while (_parent) {
-      _parent.remove(this);
-      // if this._parents is null or index >= len,
-      // then _parent is set to null, and the loop exits
-      _parent = ++index < len && _parents[index] || null;
-    }
+    (<any> this)._subscriptions = null;
 
     if (isFunction(_unsubscribe)) {
       let trial = tryCatch(_unsubscribe).call(this);
       if (trial === errorObject) {
         hasErrors = true;
-        errors = errors || (
-          errorObject.e instanceof UnsubscriptionError ?
-            flattenUnsubscriptionErrors(errorObject.e.errors) : [errorObject.e]
-        );
+        (errors = errors || []).push(errorObject.e);
       }
     }
 
     if (isArray(_subscriptions)) {
 
-      index = -1;
-      len = _subscriptions.length;
+      let index = -1;
+      const len = _subscriptions.length;
 
       while (++index < len) {
         const sub = _subscriptions[index];
@@ -114,7 +94,7 @@ export class Subscription implements ISubscription {
             errors = errors || [];
             let err = errorObject.e;
             if (err instanceof UnsubscriptionError) {
-              errors = errors.concat(flattenUnsubscriptionErrors(err.errors));
+              errors = errors.concat(err.errors);
             } else {
               errors.push(err);
             }
@@ -136,7 +116,7 @@ export class Subscription implements ISubscription {
    * unsubscribed, is the same reference `add` is being called on, or is
    * `Subscription.EMPTY`, it will not be added.
    *
-   * If this subscription is already in an `closed` state, the passed
+   * If this subscription is already in an `isUnsubscribed` state, the passed
    * tear down logic will be executed immediately.
    *
    * @param {TeardownLogic} teardown The additional logic to execute on
@@ -147,41 +127,31 @@ export class Subscription implements ISubscription {
    * list.
    */
   add(teardown: TeardownLogic): Subscription {
-    if (!teardown || (teardown === Subscription.EMPTY)) {
-      return Subscription.EMPTY;
+    if (!teardown || (
+        teardown === this) || (
+        teardown === Subscription.EMPTY)) {
+      return;
     }
 
-    if (teardown === this) {
-      return this;
-    }
-
-    let subscription = (<Subscription> teardown);
+    let sub = (<Subscription> teardown);
 
     switch (typeof teardown) {
       case 'function':
-        subscription = new Subscription(<(() => void) > teardown);
+        sub = new Subscription(<(() => void) > teardown);
       case 'object':
-        if (subscription.closed || typeof subscription.unsubscribe !== 'function') {
-          return subscription;
-        } else if (this.closed) {
-          subscription.unsubscribe();
-          return subscription;
-        } else if (typeof subscription._addParent !== 'function' /* quack quack */) {
-          const tmp = subscription;
-          subscription = new Subscription();
-          subscription._subscriptions = [tmp];
+        if (sub.isUnsubscribed || typeof sub.unsubscribe !== 'function') {
+          break;
+        } else if (this.isUnsubscribed) {
+          sub.unsubscribe();
+        } else {
+          ((<any> this)._subscriptions || ((<any> this)._subscriptions = [])).push(sub);
         }
         break;
       default:
-        throw new Error('unrecognized teardown ' + teardown + ' added to Subscription.');
+        throw new Error('Unrecognized teardown ' + teardown + ' added to Subscription.');
     }
 
-    const subscriptions = this._subscriptions || (this._subscriptions = []);
-
-    subscriptions.push(subscription);
-    subscription._addParent(this);
-
-    return subscription;
+    return sub;
   }
 
   /**
@@ -191,7 +161,16 @@ export class Subscription implements ISubscription {
    * @return {void}
    */
   remove(subscription: Subscription): void {
-    const subscriptions = this._subscriptions;
+
+    // HACK: This might be redundant because of the logic in `add()`
+    if (subscription == null   || (
+        subscription === this) || (
+        subscription === Subscription.EMPTY)) {
+      return;
+    }
+
+    const subscriptions = (<any> this)._subscriptions;
+
     if (subscriptions) {
       const subscriptionIndex = subscriptions.indexOf(subscription);
       if (subscriptionIndex !== -1) {
@@ -199,24 +178,4 @@ export class Subscription implements ISubscription {
       }
     }
   }
-
-  private _addParent(parent: Subscription) {
-    let { _parent, _parents } = this;
-    if (!_parent || _parent === parent) {
-      // If we don't have a parent, or the new parent is the same as the
-      // current parent, then set this._parent to the new parent.
-      this._parent = parent;
-    } else if (!_parents) {
-      // If there's already one parent, but not multiple, allocate an Array to
-      // store the rest of the parent Subscriptions.
-      this._parents = [parent];
-    } else if (_parents.indexOf(parent) === -1) {
-      // Only add the new parent to the _parents list if it's not already there.
-      _parents.push(parent);
-    }
-  }
-}
-
-function flattenUnsubscriptionErrors(errors: any[]) {
- return errors.reduce((errs, err) => errs.concat((err instanceof UnsubscriptionError) ? err.errors : err), []);
 }

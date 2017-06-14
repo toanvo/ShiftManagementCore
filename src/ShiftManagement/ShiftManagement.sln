@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftManagement.Web", "ShiftManagement.Web\ShiftManagement.Web.csproj", "{878323E5-9746-4271-BC28-EDCBE53D11DB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftManagement.Services", "ShiftManagement.Services\ShiftManagement.Services.csproj", "{EBAAF201-982D-4948-9310-05ADDD29BF27}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftManagement.Domain", "ShiftManagement.Domain\ShiftManagement.Domain.csproj", "{2D40CF12-94F5-4EB8-A813-2D090D041ADA}"
@@ -13,16 +11,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftManagement.DataAccess"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftManagement.Infrastructure", "ShiftManagement.Infrastructure\ShiftManagement.Infrastructure.csproj", "{BF17BADC-2E2E-4F19-870F-A8A00614FCA9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftManagement.Web", "ShiftManagement.Web\ShiftManagement.Web.csproj", "{A7178272-E20D-4BFB-A0D0-B67FE32BDA66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{878323E5-9746-4271-BC28-EDCBE53D11DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{878323E5-9746-4271-BC28-EDCBE53D11DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{878323E5-9746-4271-BC28-EDCBE53D11DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{878323E5-9746-4271-BC28-EDCBE53D11DB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EBAAF201-982D-4948-9310-05ADDD29BF27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EBAAF201-982D-4948-9310-05ADDD29BF27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBAAF201-982D-4948-9310-05ADDD29BF27}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +35,10 @@ Global
 		{BF17BADC-2E2E-4F19-870F-A8A00614FCA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF17BADC-2E2E-4F19-870F-A8A00614FCA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF17BADC-2E2E-4F19-870F-A8A00614FCA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7178272-E20D-4BFB-A0D0-B67FE32BDA66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7178272-E20D-4BFB-A0D0-B67FE32BDA66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7178272-E20D-4BFB-A0D0-B67FE32BDA66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7178272-E20D-4BFB-A0D0-B67FE32BDA66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

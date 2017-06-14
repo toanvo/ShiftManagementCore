@@ -1,13 +1,9 @@
-import { Observable } from '../Observable';
-import { Operator } from '../Operator';
-import { Observer } from '../Observer';
-import { Subscription } from '../Subscription';
-import { OuterSubscriber } from '../OuterSubscriber';
-import { Subscribable } from '../Observable';
-import { subscribeToResult } from '../util/subscribeToResult';
-
-export function mergeAll<T>(this: Observable<T>, concurrent?: number): T;
-export function mergeAll<T, R>(this: Observable<T>, concurrent?: number): Subscribable<R>;
+import {Observable} from '../Observable';
+import {Operator} from '../Operator';
+import {Observer} from '../Observer';
+import {Subscription} from '../Subscription';
+import {OuterSubscriber} from '../OuterSubscriber';
+import {subscribeToResult} from '../util/subscribeToResult';
 
 /**
  * Converts a higher-order Observable into a first-order Observable which
@@ -53,8 +49,12 @@ export function mergeAll<T, R>(this: Observable<T>, concurrent?: number): Subscr
  * @method mergeAll
  * @owner Observable
  */
-export function mergeAll<T>(this: Observable<T>, concurrent: number = Number.POSITIVE_INFINITY): T {
-  return <any>this.lift<any>(new MergeAllOperator<T>(concurrent));
+export function mergeAll<T>(concurrent: number = Number.POSITIVE_INFINITY): T {
+  return this.lift(new MergeAllOperator<T>(concurrent));
+}
+
+export interface MergeAllSignature<T> {
+  (concurrent?: number): T;
 }
 
 export class MergeAllOperator<T> implements Operator<Observable<T>, T> {
@@ -62,7 +62,7 @@ export class MergeAllOperator<T> implements Operator<Observable<T>, T> {
   }
 
   call(observer: Observer<T>, source: any): any {
-    return source.subscribe(new MergeAllSubscriber(observer, this.concurrent));
+    return source._subscribe(new MergeAllSubscriber(observer, this.concurrent));
   }
 }
 

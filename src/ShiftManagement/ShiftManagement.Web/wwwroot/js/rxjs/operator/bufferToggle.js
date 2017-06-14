@@ -55,7 +55,7 @@ var BufferToggleOperator = (function () {
         this.closingSelector = closingSelector;
     }
     BufferToggleOperator.prototype.call = function (subscriber, source) {
-        return source.subscribe(new BufferToggleSubscriber(subscriber, this.openings, this.closingSelector));
+        return source._subscribe(new BufferToggleSubscriber(subscriber, this.openings, this.closingSelector));
     };
     return BufferToggleOperator;
 }());
@@ -138,7 +138,7 @@ var BufferToggleSubscriber = (function (_super) {
         var context = { buffer: buffer, subscription: subscription };
         contexts.push(context);
         var innerSubscription = subscribeToResult_1.subscribeToResult(this, closingNotifier, context);
-        if (!innerSubscription || innerSubscription.closed) {
+        if (!innerSubscription || innerSubscription.isUnsubscribed) {
             this.closeBuffer(context);
         }
         else {

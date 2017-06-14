@@ -35,6 +35,8 @@
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+
+            HostingEnvironment = env;
             Configuration = builder.Build();
         }
 
@@ -47,12 +49,11 @@
             services
                 .AddMvc(opt =>
                 {
-                    if (!HostingEnvironment.IsProduction())
-                    {
-                        opt.SslPort = 44388;
-                    }
-
-                    opt.Filters.Add(new RequireHttpsAttribute());
+                    //if (!HostingEnvironment.IsProduction())
+                    //{
+                    //    opt.SslPort = 44388;
+                    //}
+                    //opt.Filters.Add(new RequireHttpsAttribute());
                 })
                 .AddJsonOptions(opt =>
                 {
@@ -148,6 +149,7 @@
         {
             services.AddTransient<IEmployeeService, EmployeeService>();
             services.AddSingleton(this.Configuration);
+            services.AddSingleton(this.HostingEnvironment);
             services.AddTransient<DataSeeder>();
             services.AddTransient<IObjectFactory, Infrastructure.ObjectFactory>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -164,6 +166,5 @@
         {
             dataSeeder.SeedAsync().Wait();
         }
-
     }
 }

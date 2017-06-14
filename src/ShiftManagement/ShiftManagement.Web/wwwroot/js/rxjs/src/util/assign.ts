@@ -1,20 +1,30 @@
-import { root } from './root';
+import {root} from './root';
 
-export function assignImpl(target: Object, ...sources: Object[]) {
-  const len = sources.length;
-  for (let i = 0; i < len; i++) {
-    const source = sources[i];
-    for (let k in source) {
-      if (source.hasOwnProperty(k)) {
-        target[k] = source[k];
+const Object = root.Object;
+
+if (typeof (<any>Object).assign != 'function') {
+  (function () {
+    (<any>Object).assign = function assignPolyfill(target: Object, ...sources: Array<Object>): Object {
+      if (target === undefined || target === null) {
+        throw new TypeError('Cannot convert undefined or null to object');
       }
-    }
-  }
-  return target;
-};
 
-export function getAssign(root: any) {
-  return root.Object.assign || assignImpl;
+      const output = Object(target);
+      const len = sources.length;
+      for (let index = 0; index < len; index++) {
+        let source = sources[index];
+        if (source !== undefined && source !== null) {
+          for (let key in source) {
+            if (source.hasOwnProperty(key)) {
+              output[key] = source[key];
+            }
+          }
+        }
+      }
+
+      return output;
+    };
+  })();
 }
 
-export const assign = getAssign(root);
+export const assign: (target: Object, ...sources: Array<Object>) => Object = Object.assign;

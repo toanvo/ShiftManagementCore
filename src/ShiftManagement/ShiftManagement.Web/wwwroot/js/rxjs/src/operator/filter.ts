@@ -1,16 +1,6 @@
-import { Operator } from '../Operator';
-import { Subscriber } from '../Subscriber';
-import { Observable } from '../Observable';
-import { TeardownLogic } from '../Subscription';
-
-/* tslint:disable:max-line-length */
-export function filter<T, S extends T>(this: Observable<T>,
-                                       predicate: (value: T, index: number) => value is S,
-                                       thisArg?: any): Observable<S>;
-export function filter<T>(this: Observable<T>,
-                          predicate: (value: T, index: number) => boolean,
-                          thisArg?: any): Observable<T>;
-/* tslint:enable:max-line-length */
+import {Operator} from '../Operator';
+import {Subscriber} from '../Subscriber';
+import {Observable} from '../Observable';
 
 /**
  * Filter items emitted by the source Observable by only emitting those that
@@ -32,6 +22,7 @@ export function filter<T>(this: Observable<T>,
  * clicksOnDivs.subscribe(x => console.log(x));
  *
  * @see {@link distinct}
+ * @see {@link distinctKey}
  * @see {@link distinctUntilChanged}
  * @see {@link distinctUntilKeyChanged}
  * @see {@link ignoreElements}
@@ -51,9 +42,13 @@ export function filter<T>(this: Observable<T>,
  * @method filter
  * @owner Observable
  */
-export function filter<T>(this: Observable<T>, predicate: (value: T, index: number) => boolean,
+export function filter<T>(predicate: (value: T, index: number) => boolean,
                           thisArg?: any): Observable<T> {
   return this.lift(new FilterOperator(predicate, thisArg));
+}
+
+export interface FilterSignature<T> {
+  (predicate: (value: T, index: number) => boolean, thisArg?: any): Observable<T>;
 }
 
 class FilterOperator<T> implements Operator<T, T> {
@@ -61,8 +56,8 @@ class FilterOperator<T> implements Operator<T, T> {
               private thisArg?: any) {
   }
 
-  call(subscriber: Subscriber<T>, source: any): TeardownLogic {
-    return source.subscribe(new FilterSubscriber(subscriber, this.predicate, this.thisArg));
+  call(subscriber: Subscriber<T>, source: any): any {
+    return source._subscribe(new FilterSubscriber(subscriber, this.predicate, this.thisArg));
   }
 }
 

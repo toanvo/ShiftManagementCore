@@ -9,11 +9,11 @@
     "@angular/http": "4.2.2",
     "@angular/platform-browser": "4.2.2",
     "@angular/platform-browser-dynamic": "4.2.2",
-    "@angular/router": "^4.2.2",
     "@angular/upgrade": "4.2.2",
+
     "core-js": "^2.4.1",
     "reflect-metadata": "^0.1.10",
-    "rxjs": "^5.4.0",
+    "rxjs": "5.0.0-beta.6",
     "systemjs": "^0.20.13",
     "typings": "^2.1.1",
     "zone.js": "^0.8.12"
@@ -28,6 +28,6 @@
     "typescript": "^2.3.4"
   },
   "scripts": {
-    "postinstall": "typings install --save dt~core-js --global"
+    "postinstall": "typings install dt~core-js --global"
   }
 }

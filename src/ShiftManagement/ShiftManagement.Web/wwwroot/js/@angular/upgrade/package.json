@@ -2,7 +2,7 @@
   "_args": [
     [
       "@angular/upgrade@4.2.2",
-      "C:\\Users\\NguoiDung\\Documents\\ShiftManagementCore\\src\\ShiftManagement\\ShiftManagement.Web"
+      "G:\\Projects\\ShiftCore\\src\\ShiftManagement\\ShiftManagement.Web"
     ]
   ],
   "_from": "@angular/upgrade@4.2.2",
@@ -35,7 +35,7 @@
   "_shasum": "29b551f9aca77ef7befdc1900caca7c7892ceda9",
   "_shrinkwrap": null,
   "_spec": "@angular/upgrade@4.2.2",
-  "_where": "C:\\Users\\NguoiDung\\Documents\\ShiftManagementCore\\src\\ShiftManagement\\ShiftManagement.Web",
+  "_where": "G:\\Projects\\ShiftCore\\src\\ShiftManagement\\ShiftManagement.Web",
   "author": {
     "name": "angular"
   },

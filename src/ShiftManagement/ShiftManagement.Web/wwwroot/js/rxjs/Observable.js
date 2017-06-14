@@ -1,7 +1,7 @@
 "use strict";
 var root_1 = require('./util/root');
-var toSubscriber_1 = require('./util/toSubscriber');
 var observable_1 = require('./symbol/observable');
+var toSubscriber_1 = require('./util/toSubscriber');
 /**
  * A representation of any set of values over any amount of time. This the most basic building block
  * of RxJS.
@@ -35,15 +35,21 @@ var Observable = (function () {
         observable.operator = operator;
         return observable;
     };
+    /**
+     * Registers handlers for handling emitted values, error and completions from the observable, and
+     *  executes the observable's subscriber function, which will take action to set up the underlying data stream
+     * @method subscribe
+     * @param {PartialObserver|Function} observerOrNext (optional) either an observer defining all functions to be called,
+     *  or the first of three possible handlers, which is the handler for each value emitted from the observable.
+     * @param {Function} error (optional) a handler for a terminal event resulting from an error. If no error handler is provided,
+     *  the error will be thrown as unhandled
+     * @param {Function} complete (optional) a handler for a terminal event resulting from successful completion.
+     * @return {ISubscription} a subscription reference to the registered handlers
+     */
     Observable.prototype.subscribe = function (observerOrNext, error, complete) {
         var operator = this.operator;
         var sink = toSubscriber_1.toSubscriber(observerOrNext, error, complete);
-        if (operator) {
-            operator.call(sink, this.source);
-        }
-        else {
-            sink.add(this._trySubscribe(sink));
-        }
+        sink.add(operator ? operator.call(sink, this) : this._subscribe(sink));
         if (sink.syncErrorThrowable) {
             sink.syncErrorThrowable = false;
             if (sink.syncErrorThrown) {
@@ -51,16 +57,6 @@ var Observable = (function () {
             }
         }
         return sink;
-    };
-    Observable.prototype._trySubscribe = function (sink) {
-        try {
-            return this._subscribe(sink);
-        }
-        catch (err) {
-            sink.syncErrorThrown = true;
-            sink.syncErrorValue = err;
-            sink.error(err);
-        }
     };
     /**
      * @method forEach
@@ -83,10 +79,7 @@ var Observable = (function () {
             throw new Error('no Promise impl found');
         }
         return new PromiseCtor(function (resolve, reject) {
-            // Must be declared in a separate statement to avoid a RefernceError when
-            // accessing subscription below in the closure due to Temporal Dead Zone.
-            var subscription;
-            subscription = _this.subscribe(function (value) {
+            var subscription = _this.subscribe(function (value) {
                 if (subscription) {
                     // if there is a subscription, then we can surmise
                     // the next handling is asynchronous. Any errors thrown
@@ -103,7 +96,7 @@ var Observable = (function () {
                 else {
                     // if there is NO subscription, then we're getting a nexted
                     // value synchronously during subscription. We can just call it.
-                    // If it errors, Observable's `subscribe` will ensure the
+                    // If it errors, Observable's `subscribe` imple will ensure the
                     // unsubscription logic is called, then synchronously rethrow the error.
                     // After that, Promise will trap the error and send it
                     // down the rejection path.
@@ -120,7 +113,7 @@ var Observable = (function () {
      * @method Symbol.observable
      * @return {Observable} this instance of the observable
      */
-    Observable.prototype[observable_1.observable] = function () {
+    Observable.prototype[observable_1.$$observable] = function () {
         return this;
     };
     // HACK: Since TypeScript inherits static properties too, we have to

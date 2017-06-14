@@ -9,46 +9,31 @@ var tryCatch_1 = require('../../util/tryCatch');
 var errorObject_1 = require('../../util/errorObject');
 var Observable_1 = require('../../Observable');
 var Subscriber_1 = require('../../Subscriber');
-var map_1 = require('../../operator/map');
-function getCORSRequest() {
-    if (root_1.root.XMLHttpRequest) {
-        return new root_1.root.XMLHttpRequest();
-    }
-    else if (!!root_1.root.XDomainRequest) {
-        return new root_1.root.XDomainRequest();
-    }
-    else {
-        throw new Error('CORS is not supported by your browser');
-    }
-}
-function getXMLHttpRequest() {
-    if (root_1.root.XMLHttpRequest) {
-        return new root_1.root.XMLHttpRequest();
-    }
-    else {
-        var progId = void 0;
-        try {
-            var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'];
-            for (var i = 0; i < 3; i++) {
-                try {
-                    progId = progIds[i];
-                    if (new root_1.root.ActiveXObject(progId)) {
-                        break;
-                    }
-                }
-                catch (e) {
-                }
-            }
-            return new root_1.root.ActiveXObject(progId);
+function createXHRDefault() {
+    var xhr = new root_1.root.XMLHttpRequest();
+    if (this.crossDomain) {
+        if ('withCredentials' in xhr) {
+            xhr.withCredentials = true;
+            return xhr;
         }
-        catch (e) {
-            throw new Error('XMLHttpRequest is not supported by your browser');
+        else if (!!root_1.root.XDomainRequest) {
+            return new root_1.root.XDomainRequest();
+        }
+        else {
+            throw new Error('CORS is not supported by your browser');
         }
     }
+    else {
+        return xhr;
+    }
 }
-function ajaxGet(url, headers) {
+function defaultGetResultSelector(response) {
+    return response.response;
+}
+function ajaxGet(url, resultSelector, headers) {
+    if (resultSelector === void 0) { resultSelector = defaultGetResultSelector; }
     if (headers === void 0) { headers = null; }
-    return new AjaxObservable({ method: 'GET', url: url, headers: headers });
+    return new AjaxObservable({ method: 'GET', url: url, resultSelector: resultSelector, headers: headers });
 }
 exports.ajaxGet = ajaxGet;
 ;
@@ -67,14 +52,9 @@ function ajaxPut(url, body, headers) {
 }
 exports.ajaxPut = ajaxPut;
 ;
-function ajaxPatch(url, body, headers) {
-    return new AjaxObservable({ method: 'PATCH', url: url, body: body, headers: headers });
-}
-exports.ajaxPatch = ajaxPatch;
-;
-function ajaxGetJSON(url, headers) {
-    return new AjaxObservable({ method: 'GET', url: url, responseType: 'json', headers: headers })
-        .lift(new map_1.MapOperator(function (x, index) { return x.response; }, null));
+function ajaxGetJSON(url, resultSelector, headers) {
+    var finalResultSelector = resultSelector ? function (res) { return resultSelector(res.response); } : function (res) { return res.response; };
+    return new AjaxObservable({ method: 'GET', url: url, responseType: 'json', resultSelector: finalResultSelector, headers: headers });
 }
 exports.ajaxGetJSON = ajaxGetJSON;
 ;
@@ -89,11 +69,8 @@ var AjaxObservable = (function (_super) {
         _super.call(this);
         var request = {
             async: true,
-            createXHR: function () {
-                return this.crossDomain ? getCORSRequest.call(this) : getXMLHttpRequest();
-            },
+            createXHR: createXHRDefault,
             crossDomain: false,
-            withCredentials: false,
             headers: {},
             method: 'GET',
             responseType: 'json',
@@ -111,16 +88,13 @@ var AjaxObservable = (function (_super) {
         }
         this.request = request;
     }
-    AjaxObservable.prototype._subscribe = function (subscriber) {
-        return new AjaxSubscriber(subscriber, this.request);
-    };
     /**
      * Creates an observable for an Ajax request with either a request object with
      * url, headers, etc or a string for a URL.
      *
      * @example
      * source = Rx.Observable.ajax('/products');
-     * source = Rx.Observable.ajax({ url: 'products', method: 'GET' });
+     * source = Rx.Observable.ajax( url: 'products', method: 'GET' });
      *
      * @param {string|Object} request Can be one of the following:
      *   A string of the URL to make the Ajax call.
@@ -140,6 +114,10 @@ var AjaxObservable = (function (_super) {
      * @name ajax
      * @owner Observable
     */
+    AjaxObservable._create_stub = function () { return null; };
+    AjaxObservable.prototype._subscribe = function (subscriber) {
+        return new AjaxSubscriber(subscriber, this.request);
+    };
     AjaxObservable.create = (function () {
         var create = function (urlOrRequest) {
             return new AjaxObservable(urlOrRequest);
@@ -148,7 +126,6 @@ var AjaxObservable = (function (_super) {
         create.post = ajaxPost;
         create.delete = ajaxDelete;
         create.put = ajaxPut;
-        create.patch = ajaxPatch;
         create.getJSON = ajaxGetJSON;
         return create;
     })();
@@ -172,18 +149,30 @@ var AjaxSubscriber = (function (_super) {
             headers['X-Requested-With'] = 'XMLHttpRequest';
         }
         // ensure content type is set
-        if (!('Content-Type' in headers) && !(root_1.root.FormData && request.body instanceof root_1.root.FormData) && typeof request.body !== 'undefined') {
+        if (!('Content-Type' in headers)) {
             headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
         }
         // properly serialize body
         request.body = this.serializeBody(request.body, request.headers['Content-Type']);
+        this.resultSelector = request.resultSelector;
         this.send();
     }
     AjaxSubscriber.prototype.next = function (e) {
         this.done = true;
-        var _a = this, xhr = _a.xhr, request = _a.request, destination = _a.destination;
+        var _a = this, resultSelector = _a.resultSelector, xhr = _a.xhr, request = _a.request, destination = _a.destination;
         var response = new AjaxResponse(e, xhr, request);
-        destination.next(response);
+        if (resultSelector) {
+            var result = tryCatch_1.tryCatch(resultSelector)(response);
+            if (result === errorObject_1.errorObject) {
+                this.error(errorObject_1.errorObject.e);
+            }
+            else {
+                destination.next(result);
+            }
+        }
+        else {
+            destination.next(response);
+        }
     };
     AjaxSubscriber.prototype.send = function () {
         var _a = this, request = _a.request, _b = _a.request, user = _b.user, method = _b.method, url = _b.url, async = _b.async, password = _b.password, headers = _b.headers, body = _b.body;
@@ -194,12 +183,7 @@ var AjaxSubscriber = (function (_super) {
         }
         else {
             this.xhr = xhr;
-            // set up the events before open XHR
-            // https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
-            // You need to add the event listeners before calling open() on the request.
-            // Otherwise the progress events will not fire.
-            this.setupEvents(xhr, request);
-            // open XHR
+            // open XHR first
             var result = void 0;
             if (user) {
                 result = tryCatch_1.tryCatch(xhr.open).call(xhr, method, url, async, user, password);
@@ -209,24 +193,23 @@ var AjaxSubscriber = (function (_super) {
             }
             if (result === errorObject_1.errorObject) {
                 this.error(errorObject_1.errorObject.e);
-                return null;
+                return;
             }
-            // timeout, responseType and withCredentials can be set once the XHR is open
+            // timeout and responseType can be set once the XHR is open
             xhr.timeout = request.timeout;
             xhr.responseType = request.responseType;
-            if ('withCredentials' in xhr) {
-                xhr.withCredentials = !!request.withCredentials;
-            }
             // set headers
             this.setHeaders(xhr, headers);
+            // now set up the events
+            this.setupEvents(xhr, request);
             // finally send the request
-            result = body ? tryCatch_1.tryCatch(xhr.send).call(xhr, body) : tryCatch_1.tryCatch(xhr.send).call(xhr);
-            if (result === errorObject_1.errorObject) {
-                this.error(errorObject_1.errorObject.e);
-                return null;
+            if (body) {
+                xhr.send(body);
+            }
+            else {
+                xhr.send();
             }
         }
-        return xhr;
     };
     AjaxSubscriber.prototype.serializeBody = function (body, contentType) {
         if (!body || typeof body === 'string') {
@@ -235,19 +218,15 @@ var AjaxSubscriber = (function (_super) {
         else if (root_1.root.FormData && body instanceof root_1.root.FormData) {
             return body;
         }
-        if (contentType) {
-            var splitIndex = contentType.indexOf(';');
-            if (splitIndex !== -1) {
-                contentType = contentType.substring(0, splitIndex);
-            }
+        var splitIndex = contentType.indexOf(';');
+        if (splitIndex !== -1) {
+            contentType = contentType.substring(0, splitIndex);
         }
         switch (contentType) {
             case 'application/x-www-form-urlencoded':
                 return Object.keys(body).map(function (key) { return (encodeURI(key) + "=" + encodeURI(body[key])); }).join('&');
             case 'application/json':
                 return JSON.stringify(body);
-            default:
-                return body;
         }
     };
     AjaxSubscriber.prototype.setHeaders = function (xhr, headers) {
@@ -259,47 +238,36 @@ var AjaxSubscriber = (function (_super) {
     };
     AjaxSubscriber.prototype.setupEvents = function (xhr, request) {
         var progressSubscriber = request.progressSubscriber;
-        function xhrTimeout(e) {
+        xhr.ontimeout = function xhrTimeout(e) {
             var _a = xhrTimeout, subscriber = _a.subscriber, progressSubscriber = _a.progressSubscriber, request = _a.request;
             if (progressSubscriber) {
                 progressSubscriber.error(e);
             }
             subscriber.error(new AjaxTimeoutError(this, request)); //TODO: Make betterer.
-        }
-        ;
-        xhr.ontimeout = xhrTimeout;
-        xhrTimeout.request = request;
-        xhrTimeout.subscriber = this;
-        xhrTimeout.progressSubscriber = progressSubscriber;
-        if (xhr.upload && 'withCredentials' in xhr) {
+        };
+        xhr.ontimeout.request = request;
+        xhr.ontimeout.subscriber = this;
+        xhr.ontimeout.progressSubscriber = progressSubscriber;
+        if (xhr.upload && 'withCredentials' in xhr && root_1.root.XDomainRequest) {
             if (progressSubscriber) {
-                var xhrProgress_1;
-                xhrProgress_1 = function (e) {
-                    var progressSubscriber = xhrProgress_1.progressSubscriber;
+                xhr.onprogress = function xhrProgress(e) {
+                    var progressSubscriber = xhrProgress.progressSubscriber;
                     progressSubscriber.next(e);
                 };
-                if (root_1.root.XDomainRequest) {
-                    xhr.onprogress = xhrProgress_1;
-                }
-                else {
-                    xhr.upload.onprogress = xhrProgress_1;
-                }
-                xhrProgress_1.progressSubscriber = progressSubscriber;
+                xhr.onprogress.progressSubscriber = progressSubscriber;
             }
-            var xhrError_1;
-            xhrError_1 = function (e) {
-                var _a = xhrError_1, progressSubscriber = _a.progressSubscriber, subscriber = _a.subscriber, request = _a.request;
+            xhr.onerror = function xhrError(e) {
+                var _a = xhrError, progressSubscriber = _a.progressSubscriber, subscriber = _a.subscriber, request = _a.request;
                 if (progressSubscriber) {
                     progressSubscriber.error(e);
                 }
                 subscriber.error(new AjaxError('ajax error', this, request));
             };
-            xhr.onerror = xhrError_1;
-            xhrError_1.request = request;
-            xhrError_1.subscriber = this;
-            xhrError_1.progressSubscriber = progressSubscriber;
+            xhr.onerror.request = request;
+            xhr.onerror.subscriber = this;
+            xhr.onerror.progressSubscriber = progressSubscriber;
         }
-        function xhrReadyStateChange(e) {
+        xhr.onreadystatechange = function xhrReadyStateChange(e) {
             var _a = xhrReadyStateChange, subscriber = _a.subscriber, progressSubscriber = _a.progressSubscriber, request = _a.request;
             if (this.readyState === 4) {
                 // normalize IE9 bug (http://bugs.jquery.com/ticket/1450)
@@ -325,16 +293,14 @@ var AjaxSubscriber = (function (_super) {
                     subscriber.error(new AjaxError('ajax error ' + status_1, this, request));
                 }
             }
-        }
-        ;
-        xhr.onreadystatechange = xhrReadyStateChange;
-        xhrReadyStateChange.subscriber = this;
-        xhrReadyStateChange.progressSubscriber = progressSubscriber;
-        xhrReadyStateChange.request = request;
+        };
+        xhr.onreadystatechange.subscriber = this;
+        xhr.onreadystatechange.progressSubscriber = progressSubscriber;
+        xhr.onreadystatechange.request = request;
     };
     AjaxSubscriber.prototype.unsubscribe = function () {
         var _a = this, done = _a.done, xhr = _a.xhr;
-        if (!done && xhr && xhr.readyState !== 4 && typeof xhr.abort === 'function') {
+        if (!done && xhr && xhr.readyState !== 4) {
             xhr.abort();
         }
         _super.prototype.unsubscribe.call(this);
@@ -360,10 +326,10 @@ var AjaxResponse = (function () {
             case 'json':
                 if ('response' in xhr) {
                     //IE does not support json as responseType, parse it internally
-                    this.response = xhr.responseType ? xhr.response : JSON.parse(xhr.response || xhr.responseText || 'null');
+                    this.response = xhr.responseType ? xhr.response : JSON.parse(xhr.response || xhr.responseText || '');
                 }
                 else {
-                    this.response = JSON.parse(xhr.responseText || 'null');
+                    this.response = JSON.parse(xhr.responseText || '');
                 }
                 break;
             case 'xml':

@@ -22,7 +22,8 @@ var map_1 = require('./map');
  *
  * @param {...string} properties The nested properties to pluck from each source
  * value (an object).
- * @return {Observable} A new Observable of property values from the source values.
+ * @return {Observable} Returns a new Observable of property values from the
+ * source values.
  * @method pluck
  * @owner Observable
  */
@@ -33,7 +34,7 @@ function pluck() {
     }
     var length = properties.length;
     if (length === 0) {
-        throw new Error('list of properties cannot be empty.');
+        throw new Error('List of properties cannot be empty.');
     }
     return map_1.map.call(this, plucker(properties, length));
 }

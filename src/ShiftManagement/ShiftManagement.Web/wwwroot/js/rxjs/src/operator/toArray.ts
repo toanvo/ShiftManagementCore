@@ -1,19 +1,23 @@
-import { Operator } from '../Operator';
-import { Subscriber } from '../Subscriber';
-import { Observable } from '../Observable';
+import {Operator} from '../Operator';
+import {Subscriber} from '../Subscriber';
+import {Observable} from '../Observable';
 
 /**
  * @return {Observable<any[]>|WebSocketSubject<T>|Observable<T>}
  * @method toArray
  * @owner Observable
  */
-export function toArray<T>(this: Observable<T>): Observable<T[]> {
+export function toArray<T>(): Observable<T[]> {
   return this.lift(new ToArrayOperator());
+}
+
+export interface ToArraySignature<T> {
+  (): Observable<T[]>;
 }
 
 class ToArrayOperator<T> implements Operator<T, T[]> {
   call(subscriber: Subscriber<T[]>, source: any): any {
-    return source.subscribe(new ToArraySubscriber(subscriber));
+    return source._subscribe(new ToArraySubscriber(subscriber));
   }
 }
 

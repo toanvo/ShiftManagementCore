@@ -26,11 +26,8 @@ System.register(["@angular/core", "@angular/platform-browser", "@angular/http", 
             }
         ],
         execute: function () {
-            AppModule = (function () {
-                function AppModule() {
-                }
-                return AppModule;
-            }());
+            AppModule = class AppModule {
+            };
             AppModule = __decorate([
                 core_1.NgModule({
                     declarations: [app_component_1.AppComponent],

@@ -2,7 +2,7 @@
   "_args": [
     [
       "@angular/core@4.2.2",
-      "C:\\Users\\NguoiDung\\Documents\\ShiftManagementCore\\src\\ShiftManagement\\ShiftManagement.Web"
+      "G:\\Projects\\ShiftCore\\src\\ShiftManagement\\ShiftManagement.Web"
     ]
   ],
   "_from": "@angular/core@4.2.2",
@@ -35,7 +35,7 @@
   "_shasum": "af5587dda275935868709d8c186e2dc2a1d70a00",
   "_shrinkwrap": null,
   "_spec": "@angular/core@4.2.2",
-  "_where": "C:\\Users\\NguoiDung\\Documents\\ShiftManagementCore\\src\\ShiftManagement\\ShiftManagement.Web",
+  "_where": "G:\\Projects\\ShiftCore\\src\\ShiftManagement\\ShiftManagement.Web",
   "author": {
     "name": "angular"
   },

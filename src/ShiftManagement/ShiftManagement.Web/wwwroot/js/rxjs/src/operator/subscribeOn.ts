@@ -1,32 +1,22 @@
-import { Operator } from '../Operator';
-import { IScheduler } from '../Scheduler';
-import { Subscriber } from '../Subscriber';
-import { Observable } from '../Observable';
-import { TeardownLogic } from '../Subscription';
-import { SubscribeOnObservable } from '../observable/SubscribeOnObservable';
+import {Scheduler} from '../Scheduler';
+import {Observable} from '../Observable';
+import {SubscribeOnObservable} from '../observable/SubscribeOnObservable';
 
 /**
- * Asynchronously subscribes Observers to this Observable on the specified IScheduler.
+ * Asynchronously subscribes Observers to this Observable on the specified Scheduler.
  *
  * <img src="./img/subscribeOn.png" width="100%">
  *
- * @param {Scheduler} scheduler - The IScheduler to perform subscription actions on.
- * @return {Observable<T>} The source Observable modified so that its subscriptions happen on the specified IScheduler.
+ * @param {Scheduler} the Scheduler to perform subscription actions on.
+ * @return {Observable<T>} the source Observable modified so that its subscriptions happen on the specified Scheduler
  .
  * @method subscribeOn
  * @owner Observable
  */
-export function subscribeOn<T>(this: Observable<T>, scheduler: IScheduler, delay: number = 0): Observable<T> {
-  return this.lift(new SubscribeOnOperator<T>(scheduler, delay));
+export function subscribeOn<T>(scheduler: Scheduler, delay: number = 0): Observable<T> {
+  return new SubscribeOnObservable<T>(this, delay, scheduler);
 }
 
-class SubscribeOnOperator<T> implements Operator<T, T> {
-  constructor(private scheduler: IScheduler,
-              private delay: number) {
-  }
-  call(subscriber: Subscriber<T>, source: any): TeardownLogic {
-    return new SubscribeOnObservable(
-      source, this.delay, this.scheduler
-    ).subscribe(subscriber);
-  }
+export interface SubscribeOnSignature<T> {
+  (scheduler: Scheduler, delay?: number): Observable<T>;
 }
