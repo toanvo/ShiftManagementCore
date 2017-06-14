@@ -7,6 +7,11 @@
   <PropertyGroup>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="wwwroot\index.html" />
+    <Content Include="wwwroot\systemjs.config.js" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="automapper" Version="6.0.2" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="2.0.1" />
@@ -35,7 +40,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Filters\" />
+    <Folder Include="Scripts\js\" />
+    <Folder Include="typings\" />
+    <Folder Include="wwwroot\app\" />
+    <Folder Include="wwwroot\js\%40angular\" />
+    <Folder Include="wwwroot\js\rxjs\" />
   </ItemGroup>
 
 </Project>
