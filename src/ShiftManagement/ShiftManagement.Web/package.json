@@ -2,32 +2,7 @@
   "version": "1.0.0",
   "name": "shiftmanagementcore",
   "private": true,
-  "dependencies": {
-    "@angular/common": "4.2.2",
-    "@angular/compiler": "4.2.2",
-    "@angular/core": "4.2.2",
-    "@angular/http": "4.2.2",
-    "@angular/platform-browser": "4.2.2",
-    "@angular/platform-browser-dynamic": "4.2.2",
-    "@angular/upgrade": "4.2.2",
-
-    "core-js": "^2.4.1",
-    "reflect-metadata": "^0.1.10",
-    "rxjs": "5.0.0-beta.6",
-    "systemjs": "^0.20.13",
-    "typings": "^2.1.1",
-    "zone.js": "^0.8.12"
-  },
-  "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-clean": "^0.3.2",
-    "gulp-concat": "^2.6.1",
-    "gulp-sourcemaps": "^2.6.0",
-    "gulp-typescript": "^3.1.7",
-    "gulp-uglify": "^3.0.0",
-    "typescript": "^2.3.4"
-  },
-  "scripts": {
-    "postinstall": "typings install dt~core-js --global"
-  }
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {}
 }

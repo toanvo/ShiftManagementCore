@@ -1,7 +1,7 @@
 ﻿namespace ShiftManagement.Domain
 {
     using System;
-    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+    using Microsoft.AspNetCore.Identity;
 
     public class EmployeeRole : IdentityRole<int>, IIdentity, IAudit
     {

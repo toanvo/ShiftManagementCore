@@ -1,1 +1,0 @@
-{"version":3,"sources":["main.ts"],"names":[],"mappings":";;;;;;;;;;;;;;YAGA,iDAAsB,EAAE,CAAC,eAAe,CAAC,sBAAS,CAAC,CAAC;QAAA,CAAC","file":"main.js","sourcesContent":["import {platformBrowserDynamic} from \"@angular/platform-browser-dynamic\";\r\nimport {AppModule} from \"./app.module\";\r\n\r\nplatformBrowserDynamic().bootstrapModule(AppModule);"]}
