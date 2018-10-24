@@ -33,7 +33,7 @@ namespace ShiftManagement.Web.Claims
 
         public static SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(PrivateKey));
 
-        public JwtTokenProvider(RequestDelegate next, UserManager<Employee> userManager, SignInManager<Employee> signInManager, IConfiguration configuration)
+        public JwtTokenProvider(RequestDelegate next, UserManager<Employee> userManager, SignInManager<Employee> signInManager, IConfiguration configuration, ILogger<JwtTokenProvider> logger)
         {
             _next = next;
             _signingCredentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
@@ -41,7 +41,8 @@ namespace ShiftManagement.Web.Claims
             _userManager = userManager;
             _signInManager = signInManager;
             _config = configuration;
-            
+            _logger = logger;
+
             Initialize();
         }
 
@@ -56,11 +57,9 @@ namespace ShiftManagement.Web.Claims
             {
                 return CreateToken(httpContext);
             }
-            else
-            {
-                httpContext.Response.StatusCode = 400;
-                return httpContext.Response.WriteAsync("Bad request.");
-            }
+            
+            httpContext.Response.StatusCode = 400;
+            return httpContext.Response.WriteAsync("Bad request.");
         }
 
         private void Initialize()

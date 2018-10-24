@@ -16,7 +16,8 @@ namespace ShiftManagement.Web.Claims
             return builder.UseMiddleware<JwtTokenProvider>(
                 serviceProvider.GetService<UserManager<Employee>>(), 
                 serviceProvider.GetService<SignInManager<Employee>>(),
-                serviceProvider.GetService<IConfiguration>());
+                serviceProvider.GetService<IConfiguration>(),
+                serviceProvider.GetService<ILogger<JwtTokenProvider>>());
         }
     }
 }

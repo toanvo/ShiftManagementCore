@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShiftManagement.Web.Data;
+using NLog.Web;
 
 namespace ShiftManagement.Web
 {
@@ -14,6 +15,7 @@ namespace ShiftManagement.Web
     {
         public static void Main(string[] args)
         {
+            var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
             var host = GetWebHost(args);
 
             ExceuteSeeding(host);
@@ -43,8 +45,10 @@ namespace ShiftManagement.Web
                           }).ConfigureLogging(logging =>
                           {
                               logging.ClearProviders();
+                              logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
                               logging.AddConsole();
-                          }).Build();
+                          }).UseNLog()
+                          .Build();
         }
     }
 }

@@ -17,13 +17,13 @@
     {
         private readonly IMapper _mapper;
         private readonly IEmployeeService _employeeService;
-        //private readonly ILogger _logger;
+        private readonly ILogger<EmployeeController> _logger;
 
-        public EmployeeController(IEmployeeService employeeService, IMapper autoMapper)
+        public EmployeeController(IEmployeeService employeeService, IMapper autoMapper, ILogger<EmployeeController> logger)
         {
             _mapper = autoMapper;
             _employeeService = employeeService;
-            //_logger = logger;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -58,7 +58,7 @@
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"Updating employee has been raised an exception {ex}");
+                _logger.LogError($"Updating employee has been raised an exception {ex}");
                 return BadRequest();
             }
         }
@@ -76,7 +76,7 @@
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"Saving the employee has been raised an exception {ex}");
+                _logger.LogError($"Saving the employee has been raised an exception {ex}");
                 return BadRequest();
             }
         }

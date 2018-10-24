@@ -64,7 +64,7 @@ namespace ShiftManagement.Web
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, DataSeeder dataSeeder)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+            
             this.HostingEnvironment = env;
 
             if (env.IsDevelopment())
@@ -114,10 +114,9 @@ namespace ShiftManagement.Web
                     .AddDefaultTokenProviders();
 
             services.AddDbContext<ShiftManagementDbContext>(o =>
-                {
-                    o.UseSqlServer(connection, b => b.MigrationsAssembly(DataAccessAssemblyName));
-                });
-            
+            {
+                o.UseSqlServer(connection, b => b.MigrationsAssembly(DataAccessAssemblyName));
+            });
         }
 
         private void RegisterJwtTokenAuthentication(IServiceCollection services)
