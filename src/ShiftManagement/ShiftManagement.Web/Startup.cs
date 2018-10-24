@@ -1,4 +1,6 @@
-﻿namespace ShiftManagement.Web
+﻿using System.IdentityModel.Tokens.Jwt;
+
+namespace ShiftManagement.Web
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -29,19 +31,12 @@
         private const string DataAccessAssemblyName = "ShiftManagement.DataAccess";
         private const string DefaultConnectionName = "ConnectionStrings:DefaultConnection";
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-
-            HostingEnvironment = env;
-            Configuration = builder.Build();
+            this.Configuration = configuration;
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
         public IServiceProvider ServiceProvider { get; set; }
         public IHostingEnvironment HostingEnvironment { get; set; }
 
@@ -62,13 +57,15 @@
                 }); 
 
             AspNetIdentityRegistration(services);
-            IocRegistration(services);            
+            RegisterJwtTokenAuthentication(services);
+            IocRegistration(services);          
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, DataSeeder dataSeeder)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            this.HostingEnvironment = env;
 
             if (env.IsDevelopment())
             {
@@ -90,26 +87,9 @@
                     context.Context.Response.Headers["Expires"] = Configuration["StaticFiles:Headers:Expires"];
                 }
             });
+
             app.UseAuthentication();
-            //app.UseJwtProvider();
-
-            //// Add the Jwt Bearer Header Authentication to validate Tokens    
-            //app.UseJwtBearerAuthentication(new JwtBearerOptions()
-            //{
-            //    AutomaticAuthenticate = true,
-            //    AutomaticChallenge = true,
-            //    RequireHttpsMetadata = false,
-            //    TokenValidationParameters = new TokenValidationParameters()
-            //    {
-            //        IssuerSigningKey = JwtTokenProvider.SecurityKey,
-            //        ValidateIssuerSigningKey = true,
-            //        ValidIssuer = Configuration["Tokens:Issuer"],
-            //        ValidateIssuer = false,
-            //        ValidateAudience = false,
-            //        ValidateLifetime = true
-            //    }
-            //});
-
+            app.UseJwtProvider(this.ServiceProvider);
             app.UseMvc(routes => BuildRoutes(routes));
             app.UseCors(cfg => 
             {
@@ -117,8 +97,6 @@
                 .AllowAnyHeader()
                 .AllowAnyMethod();
             });
-
-            SeedDatabase(dataSeeder);
         }
         
         private void BuildRoutes(IRouteBuilder rootBuilder)
@@ -131,13 +109,15 @@
         private void AspNetIdentityRegistration(IServiceCollection services)
         {
             var connection = Configuration[DefaultConnectionName];
-            services.AddEntityFrameworkSqlServer()
-                .AddDbContext<ShiftManagementDbContext>(o =>
-                    o.UseSqlServer(connection, b => b.MigrationsAssembly(DataAccessAssemblyName)));
-
-            services.AddIdentity<Employee, EmployeeRole>(config => ConfigurationIdentity(config))
+            services.AddIdentity<Employee, EmployeeRole>(ConfigurationIdentity)
                     .AddEntityFrameworkStores<ShiftManagementDbContext>()
                     .AddDefaultTokenProviders();
+
+            services.AddDbContext<ShiftManagementDbContext>(o =>
+                {
+                    o.UseSqlServer(connection, b => b.MigrationsAssembly(DataAccessAssemblyName));
+                });
+            
         }
 
         private void RegisterJwtTokenAuthentication(IServiceCollection services)
@@ -175,9 +155,8 @@
         {
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddSingleton(this.Configuration);
-            services.AddSingleton(this.HostingEnvironment);
             services.AddTransient<DataSeeder>();
-            //services.AddTransient<IObjectFactory, DbLoggerCategory.Infrastructure.ObjectFactory>();
+            services.AddTransient<IObjectFactory, ShiftManagement.Infrastructure.ObjectFactory>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
             ServiceProvider = services.BuildServiceProvider();
@@ -186,11 +165,6 @@
             {
                 cfg.AddProfile<MapperProfile>();
             });
-        }
-
-        private void SeedDatabase(DataSeeder dataSeeder)
-        {
-            dataSeeder.SeedAsync().Wait();
         }
     }
 }

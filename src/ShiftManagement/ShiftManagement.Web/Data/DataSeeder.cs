@@ -1,4 +1,6 @@
-﻿namespace ShiftManagement.Web.Data
+﻿using Microsoft.AspNetCore.Hosting;
+
+namespace ShiftManagement.Web.Data
 {
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Identity;
@@ -16,7 +18,7 @@
         private RoleManager<EmployeeRole> RoleManager;
         private UserManager<Employee> UserManager;
 
-        public DataSeeder(ShiftManagementDbContext dbContext, RoleManager<EmployeeRole> roleManager, UserManager<Employee> userManager)
+        public DataSeeder(ShiftManagementDbContext dbContext, IHostingEnvironment environment, RoleManager<EmployeeRole> roleManager, UserManager<Employee> userManager)
         {
             DbContext = dbContext;
             RoleManager = roleManager;
@@ -25,6 +27,7 @@
 
         public async Task SeedAsync()
         {
+            DbContext.Database.EnsureCreated();
             if (DbContext.Users.Local.Count == 0)
                 await CreateUsersAsync();
         }
@@ -35,6 +38,7 @@
             DateTime createdDate = new DateTime(2016, 03, 01, 12, 30, 00);
             DateTime lastModifiedDate = DateTime.Now;
             string adminRole = "Administrators";
+            string managerRole = "Manager";
             string employeeRole = "Registered";
 
             //Create Roles (if they doesn't exist yet)    
@@ -46,6 +50,11 @@
             if (!await RoleManager.RoleExistsAsync(employeeRole))
             {
                 await RoleManager.CreateAsync(new EmployeeRole() { Name = employeeRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
+            }
+
+            if (!await RoleManager.RoleExistsAsync(managerRole))
+            {
+                await RoleManager.CreateAsync(new EmployeeRole() { Name = managerRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
             }
 
             // Create the "Admin" ApplicationUser account (if it doesn't exist already)    
@@ -95,7 +104,7 @@
                 UpdateUserId = 0, // has been generated automatically
             };
 
-            await SaveEmployeeAsync(robertUser, "Pass4robert", employeeRole);
+            await SaveEmployeeAsync(robertUser, "Pass4robert", managerRole);
 #endif
             await DbContext.SaveChangesAsync();
         }

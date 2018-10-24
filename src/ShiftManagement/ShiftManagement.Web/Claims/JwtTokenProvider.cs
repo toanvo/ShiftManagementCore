@@ -1,4 +1,7 @@
-﻿namespace ShiftManagement.Web.Claims
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
+
+namespace ShiftManagement.Web.Claims
 {
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Identity;
@@ -6,7 +9,6 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.IdentityModel.Tokens;
     using Newtonsoft.Json;
-    using ShiftManagement.DataAccess;
     using ShiftManagement.Domain;
     using System;
     using System.IdentityModel.Tokens.Jwt;
@@ -26,23 +28,20 @@
 
         private readonly UserManager<Employee> _userManager;
         private readonly SignInManager<Employee> _signInManager;
-        private readonly ShiftManagementDbContext _dbContext;
-        private readonly IConfigurationRoot _config;
+        private readonly IConfiguration _config;
         private readonly ILogger<JwtTokenProvider> _logger;
 
         public static SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(PrivateKey));
 
-        public JwtTokenProvider(RequestDelegate next, ShiftManagementDbContext dbContext, UserManager<Employee> userManager, SignInManager<Employee> signInManager, IConfigurationRoot config, ILogger<JwtTokenProvider> logger)
+        public JwtTokenProvider(RequestDelegate next, UserManager<Employee> userManager, SignInManager<Employee> signInManager, IConfiguration configuration)
         {
             _next = next;
             _signingCredentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
 
-            _dbContext = dbContext;
             _userManager = userManager;
             _signInManager = signInManager;
-            _config = config;
-            _logger = logger;
-
+            _config = configuration;
+            
             Initialize();
         }
 
@@ -52,7 +51,7 @@
             {
                 return _next(httpContext);
             }
-
+            
             if (httpContext.Request.Method.Equals("POST") && httpContext.Request.HasFormContentType)
             {
                 return CreateToken(httpContext);
@@ -75,10 +74,11 @@
         {
             try
             {
-                string username = httpContext.Request.Form["username"];
-                string password = httpContext.Request.Form["password"];
-
-                var isSucceed = await VerifyUserName(username, password);
+                var formCollection = await httpContext.Request.ReadFormAsync();
+                formCollection.TryGetValue("username", out StringValues username);
+                formCollection.TryGetValue("password", out StringValues password);
+                
+                var isSucceed = await VerifyUserName(username.ToString(), password.ToString());
 
                 if (isSucceed)
                 {
@@ -91,7 +91,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"There is an exception happenned while creating JWT: {ex}");
+                _logger.LogError($"There is an exception happened while creating JWT: {ex}");
             }
 
             httpContext.Response.StatusCode = 400;
@@ -106,7 +106,13 @@
                 user = await _userManager.FindByEmailAsync(username);
             }
 
-            return user != null && await _userManager.CheckPasswordAsync(user, password);
+            if (user == null)
+            {
+                return false;
+            }
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
+            return result.Succeeded;
         }
 
         private string BuildEncodedToken(string issuer, string username)

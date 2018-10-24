@@ -1,4 +1,6 @@
-﻿namespace ShiftManagement.DataAccess
+﻿using Microsoft.EntityFrameworkCore.Storage;
+
+namespace ShiftManagement.DataAccess
 {
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
@@ -7,7 +9,7 @@
     public class ShiftManagementDbContext : IdentityDbContext<Employee, EmployeeRole, int>
     {
         public ShiftManagementDbContext(DbContextOptions<ShiftManagementDbContext> options) : base(options)
-        {
+        {   
         }
         
         public DbSet<Shop> Shops { get; set; }
