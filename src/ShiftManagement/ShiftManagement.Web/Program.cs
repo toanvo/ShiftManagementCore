@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+using Microsoft.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShiftManagement.Web.Data;
 using NLog.Web;
 using Microsoft.AspNetCore.Hosting;
+using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace ShiftManagement.Web
 {
@@ -12,7 +15,7 @@ namespace ShiftManagement.Web
     {
         public static void Main(string[] args)
         {
-            var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
             try
             {
                 var host = GetWebHost(args);
@@ -20,9 +23,13 @@ namespace ShiftManagement.Web
                 ExceuteSeeding(host);
                 host.Run();
             }
+            catch (Exception ex)
+            {
+                logger.Log(LogLevel.Error, ex);
+            }
             finally
             {
-                NLog.LogManager.Shutdown();
+                LogManager.Shutdown();
             }
         }
 
