@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace ShiftManagement.Web
 {
@@ -43,14 +44,8 @@ namespace ShiftManagement.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc(opt =>
-                {
-                    //if (!HostingEnvironment.IsProduction())
-                    //{
-                    //    opt.SslPort = 44388;
-                    //}
-                    //opt.Filters.Add(new RequireHttpsAttribute());
-                })
+                .AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(opt =>
                 {
                     opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
@@ -58,7 +53,8 @@ namespace ShiftManagement.Web
 
             AspNetIdentityRegistration(services);
             RegisterJwtTokenAuthentication(services);
-            IocRegistration(services);          
+            IocRegistration(services);
+            RegisterSwagger(services);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, DataSeeder dataSeeder)
@@ -72,10 +68,7 @@ namespace ShiftManagement.Web
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+            
 
             app.UseStaticFiles(new StaticFileOptions()
             {
@@ -86,6 +79,12 @@ namespace ShiftManagement.Web
                     context.Context.Response.Headers["Pragma"] = Configuration["StaticFiles:Headers:Pragma"];
                     context.Context.Response.Headers["Expires"] = Configuration["StaticFiles:Headers:Expires"];
                 }
+            });
+            app.UseSwagger();
+            app.UseSwaggerUI(setup =>
+            {
+                setup.SwaggerEndpoint("/swagger/v1/swagger.json", "Shiftmanagement API v1");
+
             });
 
             app.UseAuthentication();
@@ -103,7 +102,7 @@ namespace ShiftManagement.Web
         {
             rootBuilder.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller}/{action=index}/{id}");
         }
 
         private void AspNetIdentityRegistration(IServiceCollection services)
@@ -163,6 +162,14 @@ namespace ShiftManagement.Web
             services.AddAutoMapper(cfg => 
             {
                 cfg.AddProfile<MapperProfile>();
+            });
+        }
+
+        private void RegisterSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "Shiftmanagement API", Version = "v1" });
             });
         }
     }

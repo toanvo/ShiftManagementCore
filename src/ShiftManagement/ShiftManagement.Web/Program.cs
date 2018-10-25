@@ -1,25 +1,29 @@
-﻿using System;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShiftManagement.Web.Data;
 using NLog.Web;
+using Microsoft.AspNetCore.Hosting;
 
 namespace ShiftManagement.Web
 {
-    using System.IO;
-    using Microsoft.AspNetCore.Hosting;
-
     public class Program
     {
         public static void Main(string[] args)
         {
             var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-            var host = GetWebHost(args);
+            try
+            {
+                var host = GetWebHost(args);
 
-            ExceuteSeeding(host);
-            host.Run();
+                ExceuteSeeding(host);
+                host.Run();
+            }
+            finally
+            {
+                NLog.LogManager.Shutdown();
+            }
         }
 
         private static void ExceuteSeeding(IWebHost host)

@@ -14,21 +14,22 @@ namespace ShiftManagement.Web.Data
 
     public class DataSeeder
     {   
-        private ShiftManagementDbContext DbContext;
-        private RoleManager<EmployeeRole> RoleManager;
-        private UserManager<Employee> UserManager;
+        private readonly ShiftManagementDbContext _dbContext;
+        private readonly RoleManager<EmployeeRole> _roleManager;
+        private readonly UserManager<Employee> _userManager;
+        private readonly IHostingEnvironment _environment;
 
         public DataSeeder(ShiftManagementDbContext dbContext, IHostingEnvironment environment, RoleManager<EmployeeRole> roleManager, UserManager<Employee> userManager)
         {
-            DbContext = dbContext;
-            RoleManager = roleManager;
-            UserManager = userManager;
+            _dbContext = dbContext;
+            _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         public async Task SeedAsync()
         {
-            DbContext.Database.EnsureCreated();
-            if (DbContext.Users.Local.Count == 0)
+            _dbContext.Database.EnsureCreated();
+            if (_dbContext.Users.Local.Count == 0)
                 await CreateUsersAsync();
         }
 
@@ -42,19 +43,19 @@ namespace ShiftManagement.Web.Data
             string employeeRole = "Registered";
 
             //Create Roles (if they doesn't exist yet)    
-            if (!await RoleManager.RoleExistsAsync(adminRole))
+            if (!await _roleManager.RoleExistsAsync(adminRole))
             {
-                await RoleManager.CreateAsync(new EmployeeRole() { Name = adminRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
+                await _roleManager.CreateAsync(new EmployeeRole() { Name = adminRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
             }
 
-            if (!await RoleManager.RoleExistsAsync(employeeRole))
+            if (!await _roleManager.RoleExistsAsync(employeeRole))
             {
-                await RoleManager.CreateAsync(new EmployeeRole() { Name = employeeRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
+                await _roleManager.CreateAsync(new EmployeeRole() { Name = employeeRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
             }
 
-            if (!await RoleManager.RoleExistsAsync(managerRole))
+            if (!await _roleManager.RoleExistsAsync(managerRole))
             {
-                await RoleManager.CreateAsync(new EmployeeRole() { Name = managerRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
+                await _roleManager.CreateAsync(new EmployeeRole() { Name = managerRole, CreatedDate = createdDate, UpdatedDate = lastModifiedDate, CreateUserId = 0, UpdateUserId = 0 });
             }
 
             // Create the "Admin" ApplicationUser account (if it doesn't exist already)    
@@ -106,7 +107,7 @@ namespace ShiftManagement.Web.Data
 
             await SaveEmployeeAsync(robertUser, "Pass4robert", managerRole);
 #endif
-            await DbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
 
         private async Task SaveEmployeeAsync(Employee employee, string password, string role)
@@ -116,10 +117,10 @@ namespace ShiftManagement.Web.Data
                 return;
             }
 
-            if (await UserManager.FindByNameAsync(employee.UserName) == null)
+            if (await _userManager.FindByNameAsync(employee.UserName) == null)
             {
-                await UserManager.CreateAsync(employee, password);
-                await UserManager.AddToRoleAsync(employee, role);
+                await _userManager.CreateAsync(employee, password);
+                await _userManager.AddToRoleAsync(employee, role);
 
                 // Remove Lockout and E-Mail confirmation.        
                 employee.EmailConfirmed = true;
