@@ -16,10 +16,10 @@ You must install these to get ShiftManagement running on your computer:
     * Select **ASP.NET 4.7** from **Internet Information Services** > **World Wide Web Services** > **Application Development Features**
 * [Node.JS 4+](https://nodejs.org/). Please use the latest LTS version of Node (as of publishing, this is 8.11.3)
 
-These are additional tools used in HagerDEEP's creation. You do not need to install these just to run HagerDEEP:
+These are additional tools used in ShiftManagement Web's creation. You do not need to install these just to run Shiftmanagement Web:
 
 * Css Extension Language: [Sass](http://sass-lang.com/install)
-* Front end framework: [Bootstrap 3](http://getbootstrap.com/)
+* Front end framework: [Bootstrap 4](http://getbootstrap.com/), [Angular 6 framework] (https://angular.io/)
 * Package management: NuGet, [Node (npm)](https://nodejs.org/) and [Bower](https://www.bower.io/)
 * Build scripts: [Gulp](http://gulpjs.com/)
 Gulp task
