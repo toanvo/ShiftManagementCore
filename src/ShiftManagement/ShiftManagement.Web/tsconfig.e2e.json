@@ -1,0 +1,13 @@
+{
+  "extends": "../ShiftManagement.Web/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../ShiftManagement.Web/wwwroot/out-tsc/app",
+    "module": "commonjs",
+    "target": "es5",
+    "types": [
+      "jasmine",
+      "jasminewd2",
+      "node"
+    ]
+  }
+}

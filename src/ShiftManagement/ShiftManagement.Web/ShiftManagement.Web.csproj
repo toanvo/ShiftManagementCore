@@ -58,5 +58,8 @@
   <ItemGroup>
     <None Include="wwwroot\systemjs.config.js" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ClientApp\" />
+  </ItemGroup>
 
 </Project>

@@ -68,8 +68,8 @@ namespace ShiftManagement.Web
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
-            
 
+            app.UseDefaultFiles();
             app.UseStaticFiles(new StaticFileOptions()
             {
                 OnPrepareResponse = (context) =>
@@ -139,7 +139,6 @@ namespace ShiftManagement.Web
                     ValidateLifetime = true
                 };
             });
-
         }
 
         private void ConfigurationIdentity(IdentityOptions config)
