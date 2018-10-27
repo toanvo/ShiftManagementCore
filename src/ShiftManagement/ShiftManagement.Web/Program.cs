@@ -20,7 +20,7 @@ namespace ShiftManagement.Web
             {
                 var host = GetWebHost(args);
 
-                ExceuteSeeding(host);
+                ExecuteSeeding(host);
                 host.Run();
             }
             catch (Exception ex)
@@ -33,7 +33,7 @@ namespace ShiftManagement.Web
             }
         }
 
-        private static void ExceuteSeeding(IWebHost host)
+        private static void ExecuteSeeding(IWebHost host)
         {
             var scopeFactory = host.Services.GetService<IServiceScopeFactory>();
             using (var scope = scopeFactory.CreateScope())

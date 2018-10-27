@@ -1,0 +1,26 @@
+﻿version: "3"
+services:
+ web:
+   build: .
+   ports:
+     - "5000:5000"
+   depends_on:
+     - sql-server
+   environment:
+     ASPNETCORE_URLS: http://+:5000
+   networks:
+     - ftestnetwork
+ sql-server:
+   image: "microsoft/mssql-server-linux"
+   environment: 
+     SA_PASSWORD: "P@ssword"
+     ACCEPT_EULA: "Y"
+   ports:
+     - "1433:1433"   
+   networks:
+     - ftestnetwork
+networks:
+  ftestnetwork:
+    driver: bridge
+volumes:
+  dbdata: {}

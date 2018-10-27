@@ -1,0 +1,7 @@
+﻿# comment
+*/temp*
+*/*/temp*
+temp?
+*.log
+bin\
+obj\

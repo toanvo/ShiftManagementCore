@@ -23,6 +23,7 @@
               "ClientApp/src/assets"
             ],
             "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "ClientApp/src/styles.css"
             ],
             "scripts": []
