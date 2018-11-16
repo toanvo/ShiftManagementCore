@@ -24,7 +24,7 @@ These are additional tools used in ShiftManagement Web's creation. You do not ne
 Gulp task
 
 * CI server: VSTS 
-
+* Build status: [![Build status](https://asiasolution.visualstudio.com/ShiftManagement/_apis/build/status/ShiftManagement-Docker%20container-CI)](https://asiasolution.visualstudio.com/ShiftManagement/_build/latest?definitionId=2)
 ### ORM
 The ShiftManagement using an ORM tool. It is the EF core. 
 
