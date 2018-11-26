@@ -17,7 +17,6 @@ namespace ShiftManagement.Web.Data
         private readonly ShiftManagementDbContext _dbContext;
         private readonly RoleManager<EmployeeRole> _roleManager;
         private readonly UserManager<Employee> _userManager;
-        private readonly IHostingEnvironment _environment;
 
         public DataSeeder(ShiftManagementDbContext dbContext, IHostingEnvironment environment, RoleManager<EmployeeRole> roleManager, UserManager<Employee> userManager)
         {

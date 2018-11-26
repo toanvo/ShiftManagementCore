@@ -58,13 +58,20 @@
             return query;
         }
         
-        public IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>> pression = null)
+        public IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>> expression = null)
         {
             IQueryable<TEntity> query = null;            
-            query = pression == null ? _context.Set<TEntity>() : _context.Set<TEntity>().Where(pression);
+            query = expression == null ? _context.Set<TEntity>() : _context.Set<TEntity>().Where(expression);
             return query;
         }
 
+        public Task<List<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> expression = null)
+        {
+            Task<List<TEntity>> queryResult = null;            
+            queryResult = expression == null ? _context.Set<TEntity>().ToListAsync() : _context.Set<TEntity>().Where(expression).ToListAsync();
+            return queryResult;
+        }
+        
         public IEnumerable<TEntity> GetAll()
         {
             return _dbSet;

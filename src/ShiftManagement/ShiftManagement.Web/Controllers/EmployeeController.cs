@@ -9,6 +9,7 @@
     using ShiftManagement.Web.Models;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     
     [Route("api/employee")]
@@ -72,7 +73,52 @@
             {
                 var newEmployee = _mapper.Map<Employee>(employeeModel);
                 await _employeeService.CreateEmployee(newEmployee);
-                return Ok(newEmployee);
+                employeeModel.Id = newEmployee.Id;
+
+                return CreatedAtRoute(
+                    routeName: "employee", 
+                    routeValues: new { id = employeeModel.Id }, 
+                    value: employeeModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Saving the employee has been raised an exception {ex}");
+                return BadRequest();
+            }
+        }
+
+
+        [HttpGet("{{employeeIds}}", Name="GetEmployees")]
+        public async Task<IActionResult> GetEmployees(
+            [ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<int> employeeIds)
+        {
+            var employees = await _employeeService.GetEmployeeByIds(employeeIds);
+            if (employeeIds.Count() != employees.Count)
+            {
+                return NotFound();
+            }
+
+            var result = _mapper.Map<IEnumerable<EmployeeModel>>(employees);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateEmployees([FromBody]IEnumerable<EmployeeModel> employeeModel)
+        {
+            if (employeeModel == null) return BadRequest();
+
+            try
+            {
+                var newEmployees = _mapper.Map<IEnumerable<Employee>>(employeeModel);
+                foreach(var newEmployee in newEmployees)
+                {
+                    await _employeeService.CreateEmployee(newEmployee);
+                }
+
+                var employeeListResult = await _employeeService.GetEmployeeByIds(newEmployees.Select(x => x.Id));
+                var employeeIdsResult = string.Join(",", employeeListResult.Select(x => x.Id));
+
+                return CreatedAtRoute("GetEmployees", new { employeeIdsResult }, employeeListResult);
             }
             catch (Exception ex)
             {

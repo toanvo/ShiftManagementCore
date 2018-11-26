@@ -22,8 +22,10 @@
 
         Task<TEntity> GetByIdAsync(TKey id);
 
-        IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>> pression = null);
-
+        IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>> expression = null);
+        
+        Task<List<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> expression = null);
+        
         IQueryable<TEntity> Select
             (Expression<Func<TEntity, bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,

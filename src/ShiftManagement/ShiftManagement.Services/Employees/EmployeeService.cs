@@ -4,6 +4,8 @@
     using ShiftManagement.Domain;
     using ShiftManagement.Services.Interfaces;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     public class EmployeeService : IEmployeeService
@@ -41,6 +43,11 @@
         {
             _unitOfWork.GetRepository<Employee>().Delete(employeeId);
             return _unitOfWork.CommitAsync();
+        }
+
+        public Task<List<Employee>> GetEmployeeByIds(IEnumerable<int> employeeIds)
+        {
+            return _unitOfWork.GetRepository<Employee>().FindAllAsync(expression: x => employeeIds.Contains(x.Id));
         }
     }
 }

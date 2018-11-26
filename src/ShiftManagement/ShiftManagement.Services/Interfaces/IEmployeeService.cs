@@ -10,6 +10,8 @@
 
         Task<Employee> GetEmployeeById(int employeeId);
 
+        Task<List<Employee>> GetEmployeeByIds(IEnumerable<int> employeeId);
+
         Task CreateEmployee(Employee employee);
 
         Task UpdateEmployee(Employee employee);
